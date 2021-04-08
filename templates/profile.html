@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Профайл пользователя{{ group.title }}{% endblock %}
+{% block header %}Страница пользователя{% endblock %}
+{% block content %}
+{% load thumbnail %}
+
+    <main role="main" class="container">
+        <div class="row">
+
+                {% include 'include/author_card.html' %}
+
+                <div class="col-md-9">
+
+                        {% for post in page %}
+
+                            <!-- Начало блока с отдельным постом -->
+                            {% include "include/post_item.html" with post=post %}
+
+                        {% endfor %}
+                        {% include "include/paginator.html" %}
+                </div>
+        </div>
+    </main>
+
+{% endblock %}

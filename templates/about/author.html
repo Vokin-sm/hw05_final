@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+{% load static %}
+  <main role="main" class="container">
+    <div class="row">
+      <!-- Левый вспомогательный блок -->
+      <div class="col-md-4 mb-3 mt-1">
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                <div class="h3">
+                  Сергей Вокин
+                </div>
+                 <div class="h6">
+                  учусь писать хороший код
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="h6 text-muted">
+                    <img src="{% static "images/Vokin.jpg" %}" alt="Фотография">
+                    <br>
+                    <br>
+                  <a href="https://github.com/Vokin-sm">Мой Github</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <!-- Тело страницы -->
+      <div class="col-md-8">
+        <div class="card-body">
+          <div class="card-text">
+            <p>Приветствую всех участников моей социальной сети! <br> Научиться программировать
+            я хотел со времён университета, но всё как-то не получалось, теперь я настроен
+            серьёзно и готов покорять мир хорошего читаемого кода! <br>
+            Так же я люблю путешествовать и при первой возможности стараюсь отправиться в новое
+            для себя место, так что регистрируйтесь в социальной сети Yatube, пишите посты
+            про свои путешествия и не только! А так же подписывайтесь на мой
+            <a href="https://instagram.com/vokin_sm?r=nametag">Instagram</a>!
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+{% endblock %}

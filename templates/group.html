@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Записи сообщества {{ group.title }}{% endblock %}
+{% block header %}{{ group }}{% endblock %}
+{% block description %}{{ group.description|linebreaksbr }}{% endblock %}
+{% block content %}
+{% load thumbnail %}
+
+    {% for post in page %}
+
+        {% include "include/post_item.html" with post=post %}
+
+    {% endfor %}
+
+    {% include "include/paginator.html" %}
+
+{% endblock %}
