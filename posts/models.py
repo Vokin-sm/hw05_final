@@ -60,3 +60,15 @@ class Comment(models.Model):
 
     def __str__(self):
         return textwrap.shorten(self.text, width=15, placeholder='...')
+
+
+class Follow(models.Model):
+    """The Follow model is needed to create subscribers."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE,
+                             related_name='follower', verbose_name='Подписчик')
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               related_name='following', verbose_name='Автор')
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

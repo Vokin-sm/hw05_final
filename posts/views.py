@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from yatube.settings import PAGINATE_BY
 
 from .forms import CommentsForm, PostForm
-from .models import Comment, Group, Post
+from .models import Comment, Group, Post, Follow
 
 User = get_user_model()
 
@@ -51,11 +51,17 @@ def profile(request, username):
     paginator = Paginator(posts, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
+    if Follow.objects.filter(user=current_user,
+                             author=selected_user):
+        following = True
+    else:
+        following = False
     return render(request, 'profile.html',
                   {'page': page,
                    'selected_user': selected_user,
                    'number_of_posts': number_of_posts,
-                   'current_user': current_user}
+                   'current_user': current_user,
+                   'following': following}
                   )
 
 
@@ -149,3 +155,29 @@ def add_comment(request, username, post_id):
     return render(request, 'include/comments.html',
                   {'comments': comments,
                    'form': form})
+
+
+@login_required
+def follow_index(request):
+    current_user = request.user
+    post_list = Follow.objects.filter(user=current_user)
+    paginator = Paginator(post_list, PAGINATE_BY)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    return render(request, "follow.html", {'page': page})
+
+
+@login_required
+def profile_follow(request, username):
+    Follow.objects.create(user=request.user,
+                          author=username)
+    return redirect('profile',
+                    username=username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    Follow.objects.filter(user=request.user,
+                          author=username).delete()
+    return redirect('profile',
+                    username=username)
