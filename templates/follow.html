@@ -2,11 +2,13 @@
 {% block title %}Лента постов{% endblock %}
 {% block content %}
     <div class="container">
+
     {% include "include/menu.html" with index=True %}
+
     <h1>Лента постов</h1>
-    {% load thumbnail %}
 
     {% load cache %}
+
     {% cache 20 follow_page %}
 
     {% for post in page %}
@@ -18,5 +20,7 @@
     {% endcache %}
 
     {% include "include/paginator.html" %}
+
     </div>
+
 {% endblock %}

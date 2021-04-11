@@ -14,7 +14,7 @@ class PostForm(forms.ModelForm):
         fields = ('group', 'text', 'image')
 
 
-class CommentsForm(forms.ModelForm):
+class CommentForm(forms.ModelForm):
     """Comments class for creating a new comment."""
 
     class Meta:

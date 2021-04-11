@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from yatube.settings import PAGINATE_BY
 
-from .forms import CommentsForm, PostForm
-from .models import Comment, Group, Post, Follow
+from .forms import CommentForm, PostForm
+from .models import Comment, Follow, Group, Post
 
 User = get_user_model()
 
@@ -48,20 +48,29 @@ def profile(request, username):
     current_user = request.user
     posts = Post.objects.filter(author=selected_user)
     number_of_posts = len(posts)
+    follow_count = len(Follow.objects.filter(
+        user=selected_user))
+    following_count = len(Follow.objects.filter(
+        author=selected_user))
     paginator = Paginator(posts, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    if Follow.objects.filter(user=current_user,
-                             author=selected_user):
-        following = True
-    else:
-        following = False
+    following = False
+    if current_user.is_authenticated:
+        if Follow.objects.filter(user=current_user,
+                                 author=selected_user):
+            following = True
+        else:
+            following = False
     return render(request, 'profile.html',
                   {'page': page,
                    'selected_user': selected_user,
                    'number_of_posts': number_of_posts,
                    'current_user': current_user,
-                   'following': following}
+                   'following': following,
+                   'follow_count': follow_count,
+                   'following_count': following_count
+                   }
                   )
 
 
@@ -70,10 +79,14 @@ def post_view(request, username, post_id):
     selected_user = get_object_or_404(User, username=username)
     current_user = request.user
     posts = Post.objects.filter(author=selected_user)
+    follow_count = len(Follow.objects.filter(
+        user=selected_user))
+    following_count = len(Follow.objects.filter(
+        author=selected_user))
     number_of_posts = len(posts)
     selected_post = get_object_or_404(Post, author=selected_user, pk=post_id)
     comments = Comment.objects.filter(post=selected_post)
-    form = CommentsForm(request.POST or None)
+    form = CommentForm(request.POST or None)
     if form and form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
@@ -89,7 +102,9 @@ def post_view(request, username, post_id):
                    'selected_post': selected_post,
                    'number_of_posts': number_of_posts,
                    'comments': comments,
-                   'form': form
+                   'form': form,
+                   'follow_count': follow_count,
+                   'following_count': following_count
                    }
                   )
 
@@ -139,10 +154,11 @@ def server_error(request):
 
 @login_required
 def add_comment(request, username, post_id):
+    """Adds a comment to the database."""
     selected_user = get_object_or_404(User, username=username)
     selected_post = get_object_or_404(Post, author=selected_user, pk=post_id)
     comments = Comment.objects.filter(post=selected_post)
-    form = CommentsForm(request.POST or None)
+    form = CommentForm(request.POST or None)
     if form and form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
@@ -159,25 +175,44 @@ def add_comment(request, username, post_id):
 
 @login_required
 def follow_index(request):
+    """Displays the page following users."""
     current_user = request.user
-    post_list = Follow.objects.filter(user=current_user)
+    following_users = Follow.objects.filter(
+        user=current_user).values_list(
+        'author', flat=True)
+    post_list = Post.objects.filter(author__in=following_users)
     paginator = Paginator(post_list, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    return render(request, "follow.html", {'page': page})
+    return render(request, 'follow.html', {'page': page})
 
 
 @login_required
 def profile_follow(request, username):
-    Follow.objects.create(user=request.user,
-                          author=username)
+    """Subscribes the current user
+    to updates of the selected user."""
+    selected_user = User.objects.get(username=username)
+    current_user = request.user
+    subscription = Follow.objects.filter(user=current_user,
+                                         author=selected_user)
+    if (selected_user != current_user
+            and (not subscription)):
+        Follow.objects.create(user=current_user,
+                              author=selected_user)
     return redirect('profile',
                     username=username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    Follow.objects.filter(user=request.user,
-                          author=username).delete()
+    """Unsubscribes the current user
+    to the updates of the selected user."""
+    selected_user = User.objects.get(username=username)
+    current_user = request.user
+    subscription = Follow.objects.filter(user=current_user,
+                                         author=selected_user)
+    if selected_user != current_user and subscription:
+        Follow.objects.filter(user=request.user,
+                              author=selected_user).delete()
     return redirect('profile',
                     username=username)
