@@ -43,7 +43,8 @@ class AllURLTests(TestCase):
             f'/{c.USERNAME_IVANOV}/{self.post_id}/']
         self.urls_name_authorized_client = [
             '/new/',
-            f'/{c.USERNAME_IVANOV}/{self.post_id}/edit/'
+            f'/{c.USERNAME_IVANOV}/{self.post_id}/edit/',
+            f'/{c.USERNAME_IVANOV}/{self.post_id}/comment'
         ]
 
     def test_urls_exists_at_desired_location(self):
@@ -54,8 +55,9 @@ class AllURLTests(TestCase):
                 self.assertEqual(response.status_code, 200)
 
     def test_new_post_url_exists_at_desired_location(self):
-        """Страница /new/ и /<username>/<post_id>/edit/
-        доступна авторизованному пользователю."""
+        """Страницы /new/, /<username>/<post_id>/edit/
+        и /<username>/<post_id>/comment/ доступны
+        авторизованному пользователю."""
         for url in self.urls_name_authorized_client:
             with self.subTest():
                 response = self.authorized_client.get(url)
@@ -72,9 +74,9 @@ class AllURLTests(TestCase):
             response, f'/{c.USERNAME_IVANOV}/')
 
     def test_new_post_url_redirect_anonymous_on_admin_login(self):
-        """Страница по адресу /new/ и /<username>/<post_id>/edit/
-        перенаправит анонимного пользователя на страницу логина.
-        """
+        """Страницы по адресу /new/, /<username>/<post_id>/edit/
+        и /<username>/<post_id>/comment/ перенаправит анонимного
+        пользователя на страницу логина."""
         for url in self.urls_name_authorized_client:
             with self.subTest():
                 response = self.guest_client.get(url, follow=True)

@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from posts.models import Group, Post
+from posts.models import Follow, Group, Post
 
 from . import constants as c
 
@@ -20,7 +20,10 @@ class PostPagesTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         settings.MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
-        cls.user = User.objects.create_user(username=c.USERNAME_IVANOV)
+        cls.user = User.objects.create_user(
+            username=c.USERNAME_IVANOV)
+        cls.another_user = User.objects.create_user(
+            username=c.USERNAME_PETROV)
         cls.group = Group.objects.create(
             title='Тестовое название сообщества',
             slug=c.SLUG,
@@ -42,6 +45,8 @@ class PostPagesTests(TestCase):
             group=PostPagesTests.group,
             image=PostPagesTests.image
         )
+        Follow.objects.create(user=PostPagesTests.user,
+                              author=PostPagesTests.another_user)
 
     @classmethod
     def tearDownClass(cls):
@@ -51,6 +56,9 @@ class PostPagesTests(TestCase):
     def setUp(self):
         self.authorized_client = Client()
         self.authorized_client.force_login(PostPagesTests.user)
+        self.another_authorized_client = Client()
+        self.another_authorized_client.force_login(
+            PostPagesTests.another_user)
         self.post_id = Post.objects.get(
             text='Текст поста',
             author=PostPagesTests.user).pk
@@ -226,7 +234,8 @@ class PostPagesTests(TestCase):
             len(response.context['page']), 10)
 
     def test_page_index_cache(self):
-        """Checks if the main page cache is working."""
+        """Проверяет, что на главной странице
+        работает Cache"""
         content_one_post = self.authorized_client.get(reverse('index')).content
         Post.objects.create(
             text='Текст второго поста',
@@ -236,3 +245,43 @@ class PostPagesTests(TestCase):
         )
         content_two_post = self.authorized_client.get(reverse('index')).content
         self.assertEqual(content_one_post, content_two_post)
+
+    def test_profile_follow(self):
+        """Проверяет, что Авторизованный пользователь
+        может подписываться на других пользователей"""
+        follow_count = Follow.objects.filter(
+            user=PostPagesTests.another_user).count()
+        self.another_authorized_client.get(
+            reverse('profile_follow',
+                    kwargs={'username': c.USERNAME_IVANOV}
+                    ))
+        self.assertEqual(Follow.objects.filter(
+            user=PostPagesTests.another_user).count(), follow_count + 1)
+
+    def test_profile_unfollow(self):
+        """Проверяет, что Авторизованный пользователь
+        может отписываться от других пользователей"""
+        follow_count = Follow.objects.filter(
+            user=PostPagesTests.user).count()
+        self.authorized_client.get(
+            reverse('profile_unfollow',
+                    kwargs={'username': c.USERNAME_PETROV}
+                    ))
+        self.assertEqual(Follow.objects.filter(
+            user=PostPagesTests.user).count(), follow_count - 1)
+
+    def test_follow_index(self):
+        """Проверяет, что новая запись пользователя появляется в
+        ленте тех, кто на него подписан и не появляется в ленте
+        тех, кто не подписан на него."""
+        Post.objects.create(
+            text='Другой текст поста',
+            author=PostPagesTests.another_user)
+        response = self.authorized_client.get(
+            reverse('follow_index'))
+        self.assertEqual(
+            len(response.context['page']), 1)
+        response = self.another_authorized_client.get(
+            reverse('follow_index'))
+        self.assertEqual(
+            len(response.context['page']), 0)
