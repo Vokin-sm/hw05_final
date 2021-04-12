@@ -86,6 +86,13 @@ def post_view(request, username, post_id):
     number_of_posts = len(posts)
     selected_post = get_object_or_404(Post, author=selected_user, pk=post_id)
     comments = Comment.objects.filter(post=selected_post)
+    following = False
+    if current_user.is_authenticated:
+        if Follow.objects.filter(user=current_user,
+                                 author=selected_user):
+            following = True
+        else:
+            following = False
     form = CommentForm(request.POST or None)
     if form and form.is_valid():
         comment = form.save(commit=False)
@@ -104,7 +111,8 @@ def post_view(request, username, post_id):
                    'comments': comments,
                    'form': form,
                    'follow_count': follow_count,
-                   'following_count': following_count
+                   'following_count': following_count,
+                   'following': following
                    }
                   )
 
