@@ -12,7 +12,8 @@ class Group(models.Model):
     title = models.CharField('Название сообщества', max_length=200)
     slug = models.SlugField('url', unique=True)
     description = models.TextField('Описание',
-                                   help_text='Опишите это сообщество')
+                                   help_text='Опишите это сообщество'
+                                   )
 
     class Meta:
         verbose_name = 'Сообщество'
@@ -26,13 +27,23 @@ class Post(models.Model):
     """The 'Posts' model is needed to create posts."""
     text = models.TextField('Текст поста', help_text='Напишите ваш пост')
     pub_date = models.DateTimeField('Дата публикации', auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='posts', verbose_name='Автор')
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL,
-                              blank=True, null=True, related_name='groups',
-                              verbose_name='Сообщество')
-    image = models.ImageField(upload_to='posts/', blank=True, null=True,
-                              verbose_name='Изображение')
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='posts',
+                               verbose_name='Автор'
+                               )
+    group = models.ForeignKey(Group,
+                              on_delete=models.SET_NULL,
+                              blank=True,
+                              null=True,
+                              related_name='groups',
+                              verbose_name='Сообщество'
+                              )
+    image = models.ImageField(upload_to='posts/',
+                              blank=True,
+                              null=True,
+                              verbose_name='Изображение'
+                              )
 
     class Meta:
         verbose_name = 'Пост'
@@ -45,12 +56,19 @@ class Post(models.Model):
 
 class Comment(models.Model):
     """The 'Comment' model is needed to create comments."""
-    post = models.ForeignKey(Post, on_delete=models.CASCADE,
-                             related_name='comments', verbose_name='Пост')
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='comments', verbose_name='Автор')
+    post = models.ForeignKey(Post,
+                             on_delete=models.CASCADE,
+                             related_name='comments',
+                             verbose_name='Пост'
+                             )
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='comments',
+                               verbose_name='Автор'
+                               )
     text = models.TextField('Текст комментария',
-                            help_text='Напишите ваш комментарий')
+                            help_text='Напишите ваш комментарий'
+                            )
     created = models.DateTimeField('Дата публикации', auto_now_add=True)
 
     class Meta:
@@ -64,11 +82,20 @@ class Comment(models.Model):
 
 class Follow(models.Model):
     """The Follow model is needed to create subscribers."""
-    user = models.ForeignKey(User, on_delete=models.CASCADE,
-                             related_name='follower', verbose_name='Подписчик')
-    author = models.ForeignKey(User, on_delete=models.CASCADE,
-                               related_name='following', verbose_name='Автор')
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name='follower',
+                             verbose_name='Подписчик'
+                             )
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               related_name='following',
+                               verbose_name='Автор'
+                               )
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user}/{self.author}'

@@ -13,14 +13,14 @@
                 <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                                 <div class="h6 text-muted">
-                                Подписчиков: {{ following_count }} <br />
-                                Подписан: {{ follow_count }}
+                                Подписчиков: {{ selected_user.following.count }} <br />
+                                Подписан: {{ selected_user.follower.count }}
                                 </div>
                         </li>
                         <li class="list-group-item">
                                 <div class="h6 text-muted">
                                     <!-- Количество записей -->
-                                    Постов: {{ number_of_posts }}
+                                    Постов: {{ selected_user.posts.count}}
                                 </div>
                         </li>
                         {% if selected_user != current_user %}

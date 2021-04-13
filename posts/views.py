@@ -47,11 +47,6 @@ def profile(request, username):
     selected_user = get_object_or_404(User, username=username)
     current_user = request.user
     posts = Post.objects.filter(author=selected_user)
-    number_of_posts = len(posts)
-    follow_count = len(Follow.objects.filter(
-        user=selected_user))
-    following_count = len(Follow.objects.filter(
-        author=selected_user))
     paginator = Paginator(posts, PAGINATE_BY)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -65,11 +60,8 @@ def profile(request, username):
     return render(request, 'profile.html',
                   {'page': page,
                    'selected_user': selected_user,
-                   'number_of_posts': number_of_posts,
                    'current_user': current_user,
                    'following': following,
-                   'follow_count': follow_count,
-                   'following_count': following_count
                    }
                   )
 
@@ -78,12 +70,6 @@ def post_view(request, username, post_id):
     """This function displays the user's post page."""
     selected_user = get_object_or_404(User, username=username)
     current_user = request.user
-    posts = Post.objects.filter(author=selected_user)
-    follow_count = len(Follow.objects.filter(
-        user=selected_user))
-    following_count = len(Follow.objects.filter(
-        author=selected_user))
-    number_of_posts = len(posts)
     selected_post = get_object_or_404(Post, author=selected_user, pk=post_id)
     comments = Comment.objects.filter(post=selected_post)
     following = False
@@ -107,11 +93,8 @@ def post_view(request, username, post_id):
                   {'selected_user': selected_user,
                    'current_user': current_user,
                    'selected_post': selected_post,
-                   'number_of_posts': number_of_posts,
                    'comments': comments,
                    'form': form,
-                   'follow_count': follow_count,
-                   'following_count': following_count,
                    'following': following
                    }
                   )
@@ -131,7 +114,8 @@ def post_edit(request, username, post_id):
     post_editing = True
     form = PostForm(request.POST or None,
                     files=request.FILES or None,
-                    instance=selected_post)
+                    instance=selected_post
+                    )
     if request.method == 'POST':
         if form.is_valid():
             form.save()
