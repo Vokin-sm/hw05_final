@@ -66,7 +66,6 @@ class PostPagesTests(TestCase):
             author=PostPagesTests.user).count()
         self.context_content = {
             'selected_user': PostPagesTests.user,
-            'number_of_posts': self.number_of_posts,
             'current_user': PostPagesTests.user}
 
     def test_pages_use_correct_template(self):
